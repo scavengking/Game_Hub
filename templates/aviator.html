@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aviator - 9xdhamaka</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #05030a; color: #e0e0e0; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .font-serif-display { font-family: 'Playfair Display', serif; }
+        .gradient-text { background-image: linear-gradient(to right, #fde047, #f97316); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .glass-card { background: rgba(17, 9, 30, 0.6); backdrop-filter: blur(15px); border: 1px solid rgba(139, 92, 246, 0.2); }
+        .game-screen { background: radial-gradient(circle, rgba(17,9,30,1) 0%, rgba(5,3,10,1) 100%); }
+        /* Canvas for flight path */
+        #flight-path { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        .plane { position: absolute; bottom: 5%; left: 5%; width: 50px; height: 50px; will-change: transform; z-index: 2; }
+        .multiplier-text { text-shadow: 0 0 15px rgba(253, 224, 71, 0.5); z-index: 3; }
+        .game-state-overlay { z-index: 4; }
+        .modal-backdrop { transition: opacity 0.3s ease-in-out; }
+        .modal-content { transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out; }
+        .modal-hidden { opacity: 0; pointer-events: none; }
+        .modal-hidden .modal-content { transform: scale(0.95); opacity: 0; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div id="notification-container" class="fixed top-5 right-5 z-50 space-y-2"></div>
+
+    <nav class="glass-card sticky top-0 z-40">
+        <div class="container mx-auto flex justify-between items-center p-4">
+            <a class="font-serif-display text-2xl font-black gradient-text" href="{{ url_for('hub') }}">9xdhamaka</a>
+            <div class="flex items-center gap-4">
+                <div class="text-right">
+                    <p class="text-sm text-violet-300">Balance</p>
+                    <p class="text-xl font-bold">₹<span id="wallet-balance">{{ "%.2f"|format(user.wallet.balance) }}</span></p>
+                </div>
+                <button id="add-cash-btn" class="bg-green-600/80 hover:bg-green-600 text-white font-bold py-2 px-3 rounded-lg text-sm transition">Add</button>
+                <button id="withdraw-btn" class="bg-yellow-500/80 hover:bg-yellow-500 text-white font-bold py-2 px-3 rounded-lg text-sm transition">Withdraw</button>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container mx-auto p-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                  setTimeout(() => showNotification("{{ message }}", "{{ category }}"), 200);
+                });
+              </script>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <div class="grid lg:grid-cols-3 gap-4">
+            <div class="lg:col-span-2">
+                 <div class="flex items-center gap-2 overflow-x-auto pb-2 mb-4">
+                    <span class="text-sm text-gray-400 font-semibold flex-shrink-0">History:</span>
+                    {% for game in recent_games %}
+                    <span class="text-sm font-bold px-3 py-1 rounded-full glass-card {{ 'text-red-400' if game.crash_multiplier < 2 else 'text-green-400' }}">
+                        {{ "%.2f"|format(game.crash_multiplier) }}x
+                    </span>
+                    {% endfor %}
+                </div>
+
+                <div id="game-screen" class="game-screen w-full aspect-video rounded-2xl glass-card relative overflow-hidden flex items-center justify-center">
+                    <canvas id="flight-path"></canvas>
+                    
+                    <svg id="plane" class="plane" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-12 h-12 text-amber-300">
+                        <path d="M16.007 9.543A5.125 5.125 0 0112 12a5.125 5.125 0 01-4.007-2.457a4.125 4.125 0 00-5.83 5.83A5.125 5.125 0 018 12.001a5.125 5.125 0 012.457 4.007a4.125 4.125 0 005.83 5.83A5.125 5.125 0 0111.999 8a5.125 5.125 0 014.008 1.543zM12 2.25a.75.75 0 01.75.75v2.519a7.123 7.123 0 014.594 2.128l1.4-1.4a.75.75 0 011.06 1.06l-1.4 1.4a7.122 7.122 0 012.128 4.594h2.519a.75.75 0 010 1.5h-2.519a7.122 7.122 0 01-2.128 4.594l1.4 1.4a.75.75 0 11-1.06 1.06l-1.4-1.4a7.123 7.123 0 01-4.594 2.128v2.519a.75.75 0 01-1.5 0v-2.519a7.123 7.123 0 01-4.594-2.128l-1.4 1.4a.75.75 0 01-1.06-1.06l1.4-1.4a7.122 7.122 0 01-2.128-4.594H1.5a.75.75 0 010-1.5h2.519a7.122 7.122 0 012.128-4.594l-1.4-1.4a.75.75 0 011.06-1.06l1.4 1.4A7.123 7.123 0 019.48 5.519V3a.75.75 0 01.75-.75h1.5z" />
+                    </svg>
+                    
+                    <div id="game-state-overlay" class="game-state-overlay absolute inset-0 flex flex-col items-center justify-center bg-black/50 transition-opacity duration-500">
+                        <div id="game-state-message" class="text-4xl md:text-6xl font-bold text-white text-center p-4"></div>
+                        <div id="game-state-timer" class="text-2xl text-amber-400"></div>
+                    </div>
+                    
+                    <div id="multiplier-display" class="multiplier-text absolute text-6xl md:text-8xl font-bold text-amber-300 opacity-0 transition-opacity duration-300">1.00x</div>
+                </div>
+
+                <div id="control-panel" class="glass-card rounded-2xl p-4 mt-4">
+                    <div class="grid md:grid-cols-2 gap-4 items-center">
+                        <div class="flex flex-col gap-2">
+                            <input type="number" id="bet-amount" class="w-full p-3 bg-gray-800/50 border border-violet-800/50 rounded-lg focus:ring-2 focus:ring-violet-500 outline-none transition text-center" placeholder="Bet amount" value="10">
+                            <button id="bet-button" class="w-full text-white font-bold py-4 px-4 rounded-lg transition duration-300 text-xl"></button>
+                        </div>
+                        <div class="hidden md:block">
+                            <h3 class="text-center font-bold text-violet-300 mb-2">My Current Bet</h3>
+                            <div id="current-bet-display" class="text-center bg-gray-900/50 p-4 rounded-lg min-h-[76px] flex items-center justify-center">
+                                <p class="text-gray-400">No bet placed for this round.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-1 glass-card rounded-2xl p-4">
+                <h3 class="text-center font-bold text-violet-300 mb-2">Live Bets</h3>
+                <div id="live-bets-container" class="space-y-2 max-h-[70vh] overflow-y-auto">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="{{ url_for('static', filename='js/aviator_logic.js') }}"></script>
+</body>
+</html>

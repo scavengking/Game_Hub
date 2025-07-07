@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: xdhamaka-app
+    env: python
+    plan: free # Or your preferred plan type
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn --worker-class eventlet -w 1 --bind 0.0.0.0:$PORT app:app"
+    envVars:
+      - key: MONGO_URI
+        sync: false # Set this in the Render dashboard
+      - key: SECRET_KEY
+        generateValue: true # Or set your own in the dashboard
+      - key: PYTHON_VERSION
+        value: 3.10.6 # Specify a Python version

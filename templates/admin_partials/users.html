@@ -1,0 +1,37 @@
+<div class="bg-gray-800 rounded-xl overflow-hidden">
+    <table class="w-full text-left">
+        <thead class="bg-gray-700/50">
+            <tr>
+                <th class="p-4 font-medium">Mobile Number</th>
+                <th class="p-4 font-medium">Balance</th>
+                <th class="p-4 font-medium">Status</th>
+                <th class="p-4 font-medium">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-700">
+            {% for user in data.all_users %}
+            <tr class="hover:bg-gray-700/30">
+                <td class="p-4">{{ user.mobile }}</td>
+                <td class="p-4">₹{{ "%.2f"|format(user.wallet.balance) }}</td>
+                <td class="p-4">
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full {{ 'bg-green-500/20 text-green-300' if user.get('status', 'active') == 'active' else 'bg-red-500/20 text-red-300' }}">
+                        {{ user.get('status', 'active')|capitalize }}
+                    </span>
+                </td>
+                <td class="p-4 flex items-center gap-2">
+                    <form action="{{ url_for('admin_toggle_user_status', user_id=user._id) }}" method="POST">
+                        <button type="submit" class="text-xs font-bold py-2 px-3 rounded-md {{ 'bg-red-600 hover:bg-red-500' if user.get('status', 'active') == 'active' else 'bg-green-600 hover:bg-green-500' }}">
+                            {{ 'Block' if user.get('status', 'active') == 'active' else 'Unblock' }}
+                        </button>
+                    </form>
+                    <form action="{{ url_for('admin_add_bonus') }}" method="POST" class="flex items-center gap-2">
+                        <input type="hidden" name="user_id" value="{{ user._id }}">
+                        <input type="number" name="bonus_amount" class="bg-gray-700 border border-gray-600 rounded-md p-1 w-24 text-sm" placeholder="Bonus ₹">
+                        <button type="submit" class="text-xs font-bold py-2 px-3 rounded-md bg-indigo-600 hover:bg-indigo-500">Add</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

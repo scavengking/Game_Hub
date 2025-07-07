@@ -1,0 +1,48 @@
+<div class="bg-gray-800 rounded-xl overflow-hidden">
+    <table class="w-full text-left">
+        <thead class="bg-gray-700/50">
+            <tr>
+                <th class="p-4 font-medium">User Mobile</th>
+                <th class="p-4 font-medium">Amount</th>
+                <th class="p-4 font-medium">UPI ID</th>
+                <th class="p-4 font-medium">Requested At</th>
+                <th class="p-4 font-medium">Status</th>
+                <th class="p-4 font-medium">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-700">
+            {% for req in data.requests %}
+            <tr class="hover:bg-gray-700/30">
+                <td class="p-4">{{ req.user_details.mobile }}</td>
+                <td class="p-4">₹{{ "%.2f"|format(req.amount) }}</td>
+                <td class="p-4">{{ req.upi_id }}</td>
+                <td class="p-4">{{ req.requested_at.strftime('%b %d, %Y %I:%M %p') }}</td>
+                <td class="p-4">
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full 
+                        {% if req.status == 'pending' %} bg-yellow-500/20 text-yellow-300
+                        {% elif req.status == 'approved' %} bg-green-500/20 text-green-300
+                        {% else %} bg-red-500/20 text-red-300 {% endif %}">
+                        {{ req.status|capitalize }}
+                    </span>
+                </td>
+                <td class="p-4">
+                    {% if req.status == 'pending' %}
+                    <div class="flex gap-2">
+                        <form action="{{ url_for('admin_process_withdrawal', request_id=req._id) }}" method="POST">
+                            <input type="hidden" name="action" value="approve">
+                            <button type="submit" class="text-xs font-bold py-2 px-3 rounded-md bg-green-600 hover:bg-green-500">Approve</button>
+                        </form>
+                        <form action="{{ url_for('admin_process_withdrawal', request_id=req._id) }}" method="POST">
+                            <input type="hidden" name="action" value="reject">
+                            <button type="submit" class="text-xs font-bold py-2 px-3 rounded-md bg-red-600 hover:bg-red-500">Reject</button>
+                        </form>
+                    </div>
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

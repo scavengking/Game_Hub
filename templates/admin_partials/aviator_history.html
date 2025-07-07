@@ -1,0 +1,22 @@
+<div class="bg-gray-800 rounded-xl overflow-hidden">
+    <table class="w-full text-left">
+        <thead class="bg-gray-700/50">
+            <tr>
+                <th class="p-4 font-medium">Round ID</th>
+                <th class="p-4 font-medium">Crash Multiplier</th>
+                <th class="p-4 font-medium">Timestamp</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-700">
+            {% for game in data.aviator_history %}
+            <tr class="hover:bg-gray-700/30">
+                <td class="p-4 text-gray-400">#{{ game.round_id }}</td>
+                <td class="p-4 font-bold {{ 'text-red-400' if game.crash_multiplier < 2 else 'text-green-400' }}">
+                   {{ "%.2f"|format(game.crash_multiplier) }}x
+                </td>
+                <td class="p-4">{{ game.timestamp.strftime('%b %d, %Y %I:%M %p') }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
