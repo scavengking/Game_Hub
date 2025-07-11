@@ -499,28 +499,86 @@ def create_payment_order():
 
 @app.route('/api/payment/webhook', methods=['POST'])
 def cashfree_webhook():
-    data = request.get_json()
+    # --- Step 1: Security Verification (Stays the Same) ---
     received_signature = request.headers.get('x-webhook-signature')
+    timestamp = request.headers.get('x-webhook-timestamp')
+    payload = request.get_data(as_text=True)
+
+    if not received_signature or not timestamp:
+        return jsonify({"status": "error", "message": "Missing headers"}), 400
+
+    secret = app.config['CASHFREE_WEBHOOK_SECRET']
+    message = timestamp + payload
+    computed_signature = hmac.new(
+        key=secret.encode('utf-8'),
+        msg=message.encode('utf-8'),
+        digestmod=hashlib.sha256
+    ).hexdigest()
+
+    if not hmac.compare_digest(computed_signature, received_signature):
+        print("❌ Webhook signature verification failed!")
+        return jsonify({"status": "error", "message": "Invalid signature"}), 401
     
-    # TODO: Add webhook signature verification for security
+    # --- Step 2: Handle Different Event Types ---
+    print("✅ Webhook signature verified successfully.")
+    data = request.get_json()
+    order = data.get('data', {}).get('order', {})
     
-    if data.get('data', {}).get('order', {}).get('order_status') == 'PAID':
-        order = data['data']['order']
+    # If the payload doesn't contain order data, we can't process it.
+    if not order:
+        print(f"Webhook received non-order event: {data.get('type')}")
+        return jsonify({"status": "ok", "message": "Non-order event received"}), 200
+
+    order_status = order.get('order_status')
+    user_id_str = order.get('customer_details', {}).get('customer_id')
+    
+    # --- IF PAYMENT IS SUCCESSFUL ---
+    if order_status == 'PAID':
         amount = float(order['order_amount'])
-        user_id = ObjectId(order['customer_details']['customer_id'])
+        user_id = ObjectId(user_id_str)
         
+        # Prevent processing the same successful order twice
         if transactions_collection.find_one({"type": "deposit", "associated_id": order['order_id']}):
             return jsonify({"status": "already_processed"}), 200
 
+        # Add money to user's wallet
         users_collection.update_one({'_id': user_id}, {'$inc': {'wallet.balance': amount}})
         log_transaction(user_id, amount, 'deposit', 'Deposit via Cashfree', order['order_id'])
         
+        # Notify the user via WebSocket
         user_session_id = get_user_sid(str(user_id))
         if user_session_id:
             user = users_collection.find_one({'_id': user_id})
             socketio.emit('personal_update', {'message': f"₹{amount:.2f} added to your wallet.", 'balance': user['wallet']['balance']}, room=user_session_id)
             
+    # --- ELSE IF PAYMENT FAILED ---
+    elif order_status == 'FAILED':
+        amount = float(order['order_amount'])
+        user_id = ObjectId(user_id_str)
+        log_transaction(user_id, amount, 'deposit_failed', f"Payment failed for order {order['order_id']}", order['order_id'])
+        
+        # Notify the user that the payment failed
+        user_session_id = get_user_sid(str(user_id))
+        if user_session_id:
+            socketio.emit('personal_update', {'message': f"Your payment of ₹{amount:.2f} failed. Please try again."}, room=user_session_id)
+            
+    # --- ELSE IF A REFUND WAS PROCESSED ---
+    elif order_status == 'REFUNDED':
+        amount = float(order['order_amount']) # Or use a specific refund amount if available
+        user_id = ObjectId(user_id_str)
+        log_transaction(user_id, -amount, 'refund_processed', f"Refund processed for order {order['order_id']}", order['order_id'])
+
+        # Notify the user their refund is complete
+        user_session_id = get_user_sid(str(user_id))
+        if user_session_id:
+            socketio.emit('personal_update', {'message': f"Your refund for order {order['order_id']} has been processed."}, room=user_session_id)
+
+    else:
+        # Log any other statuses you are not yet handling
+        print(f"Received unhandled order status: {order_status}")
+            
     return jsonify({"status": "ok"}), 200
+
 
 @app.route('/request_withdrawal', methods=['POST'])
 @login_required
