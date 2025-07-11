@@ -119,16 +119,14 @@
     <div id="add-cash-modal" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/70 modal-hidden">
         <div class="modal-content glass-card rounded-2xl p-8 w-full max-w-md m-4">
             <h2 class="text-2xl font-bold text-center text-violet-300 mb-6">Add Cash to Wallet</h2>
-            <form action="{{ url_for('add_cash') }}" method="POST">
-                <div class="mb-4">
-                    <label for="amount" class="block text-sm font-medium text-gray-400 mb-2">Amount (₹)</label>
-                    <input type="number" name="amount" class="w-full p-3 bg-gray-800/50 border border-violet-800/50 rounded-lg focus:ring-2 focus:ring-violet-500 outline-none transition" placeholder="Min. ₹10" min="10" required>
-                </div>
-                <div class="flex gap-4 mt-6">
-                    <button type="button" class="close-modal-btn w-full bg-gray-600/50 hover:bg-gray-600/80 text-white font-bold py-3 rounded-lg transition">Cancel</button>
-                    <button type="submit" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-lg transition">Add Funds</button>
-                </div>
-            </form>
+            <div class="mb-4">
+                <label for="add-cash-amount" class="block text-sm font-medium text-gray-400 mb-2">Amount (₹)</label>
+                <input type="number" id="add-cash-amount" name="amount" class="w-full p-3 bg-gray-800/50 border border-violet-800/50 rounded-lg focus:ring-2 focus:ring-violet-500 outline-none transition" placeholder="Min. ₹10" min="10" required>
+            </div>
+            <div class="flex gap-4 mt-6">
+                <button type="button" class="close-modal-btn w-full bg-gray-600/50 hover:bg-gray-600/80 text-white font-bold py-3 rounded-lg transition">Cancel</button>
+                <button type="button" id="proceed-to-payment-btn" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-lg transition">Proceed to Pay</button>
+            </div>
         </div>
     </div>
 
@@ -138,8 +136,8 @@
             <h2 class="text-2xl font-bold text-center text-violet-300 mb-6">Request Withdrawal</h2>
             <form action="{{ url_for('request_withdrawal') }}" method="POST">
                 <div class="mb-4">
-                    <label for="amount" class="block text-sm font-medium text-gray-400 mb-2">Amount (₹)</label>
-                    <input type="number" name="amount" class="w-full p-3 bg-gray-800/50 border border-violet-800/50 rounded-lg focus:ring-2 focus:ring-violet-500 outline-none transition" placeholder="Min. ₹100" min="100" required>
+                    <label for="withdraw-amount" class="block text-sm font-medium text-gray-400 mb-2">Amount (₹)</label>
+                    <input type="number" id="withdraw-amount" name="amount" class="w-full p-3 bg-gray-800/50 border border-violet-800/50 rounded-lg focus:ring-2 focus:ring-violet-500 outline-none transition" placeholder="Min. ₹100" min="100" required>
                 </div>
                 <div class="mb-4">
                     <label for="upi_id" class="block text-sm font-medium text-gray-400 mb-2">UPI ID</label>
@@ -156,6 +154,7 @@
 
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
     <script src="{{ url_for('static', filename='js/game_logic.js') }}"></script>
 </body>
 </html>

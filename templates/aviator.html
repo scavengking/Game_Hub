@@ -16,7 +16,7 @@
         .game-screen { background: radial-gradient(circle, rgba(17,9,30,1) 0%, rgba(5,3,10,1) 100%); }
         /* Canvas for flight path */
         #flight-path { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
-        .plane { position: absolute; bottom: 5%; left: 5%; width: 50px; height: 50px; will-change: transform; z-index: 2; }
+        .plane { position: absolute; bottom: 5%; left: 5%; width: 60px; height: 60px; will-change: transform; z-index: 2; transform: rotate(-45deg); }
         .multiplier-text { text-shadow: 0 0 15px rgba(253, 224, 71, 0.5); z-index: 3; }
         .game-state-overlay { z-index: 4; }
         .modal-backdrop { transition: opacity 0.3s ease-in-out; }
@@ -70,8 +70,8 @@
                 <div id="game-screen" class="game-screen w-full aspect-video rounded-2xl glass-card relative overflow-hidden flex items-center justify-center">
                     <canvas id="flight-path"></canvas>
                     
-                    <svg id="plane" class="plane" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-12 h-12 text-amber-300">
-                        <path d="M16.007 9.543A5.125 5.125 0 0112 12a5.125 5.125 0 01-4.007-2.457a4.125 4.125 0 00-5.83 5.83A5.125 5.125 0 018 12.001a5.125 5.125 0 012.457 4.007a4.125 4.125 0 005.83 5.83A5.125 5.125 0 0111.999 8a5.125 5.125 0 014.008 1.543zM12 2.25a.75.75 0 01.75.75v2.519a7.123 7.123 0 014.594 2.128l1.4-1.4a.75.75 0 011.06 1.06l-1.4 1.4a7.122 7.122 0 012.128 4.594h2.519a.75.75 0 010 1.5h-2.519a7.122 7.122 0 01-2.128 4.594l1.4 1.4a.75.75 0 11-1.06 1.06l-1.4-1.4a7.123 7.123 0 01-4.594 2.128v2.519a.75.75 0 01-1.5 0v-2.519a7.123 7.123 0 01-4.594-2.128l-1.4 1.4a.75.75 0 01-1.06-1.06l1.4-1.4a7.122 7.122 0 01-2.128-4.594H1.5a.75.75 0 010-1.5h2.519a7.122 7.122 0 012.128-4.594l-1.4-1.4a.75.75 0 011.06-1.06l1.4 1.4A7.123 7.123 0 019.48 5.519V3a.75.75 0 01.75-.75h1.5z" />
+                    <svg id="plane" class="plane text-amber-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor">
+                        <path d="M448 224C448 224 448 224 448 224L320 224 320 128 288 96 288 224 224 224 163.6 163.6C155.9 155.9 143.7 152.4 132.2 154.5L25.3 183.3C11.1 185.8 0 197.8 0 212.2V240 272v27.8c0 14.4 11.1 26.4 25.3 28.9L132.2 357.5c11.5 2.1 23.7-1.4 31.4-9.1L224 288 288 288l0 128 32 32L320 384 320 288l128 0c35.3 0 64-28.7 64-64l0-32C512 252.7 483.3 224 448 224z"/>
                     </svg>
                     
                     <div id="game-state-overlay" class="game-state-overlay absolute inset-0 flex flex-col items-center justify-center bg-black/50 transition-opacity duration-500">
@@ -106,8 +106,43 @@
         </div>
     </div>
 
+    <div id="add-cash-modal" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/70 modal-hidden">
+        <div class="modal-content glass-card rounded-2xl p-8 w-full max-w-md m-4">
+            <h2 class="text-2xl font-bold text-center text-violet-300 mb-6">Add Cash to Wallet</h2>
+            <div class="mb-4">
+                <label for="add-cash-amount" class="block text-sm font-medium text-gray-400 mb-2">Amount (₹)</label>
+                <input type="number" id="add-cash-amount" name="amount" class="w-full p-3 bg-gray-800/50 border border-violet-800/50 rounded-lg focus:ring-2 focus:ring-violet-500 outline-none transition" placeholder="Min. ₹10" min="10" required>
+            </div>
+            <div class="flex gap-4 mt-6">
+                <button type="button" class="close-modal-btn w-full bg-gray-600/50 hover:bg-gray-600/80 text-white font-bold py-3 rounded-lg transition">Cancel</button>
+                <button type="button" id="proceed-to-payment-btn" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-lg transition">Proceed to Pay</button>
+            </div>
+        </div>
+    </div>
+    <div id="withdraw-modal" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/70 modal-hidden">
+        <div class="modal-content glass-card rounded-2xl p-8 w-full max-w-md m-4">
+            <h2 class="text-2xl font-bold text-center text-violet-300 mb-6">Request Withdrawal</h2>
+            <form action="{{ url_for('request_withdrawal') }}" method="POST">
+                <div class="mb-4">
+                    <label for="withdraw-amount" class="block text-sm font-medium text-gray-400 mb-2">Amount (₹)</label>
+                    <input type="number" id="withdraw-amount" name="amount" class="w-full p-3 bg-gray-800/50 border border-violet-800/50 rounded-lg focus:ring-2 focus:ring-violet-500 outline-none transition" placeholder="Min. ₹100" min="100" required>
+                </div>
+                <div class="mb-4">
+                    <label for="upi_id" class="block text-sm font-medium text-gray-400 mb-2">UPI ID</label>
+                    <input type="text" name="upi_id" class="w-full p-3 bg-gray-800/50 border border-gray-800/50 rounded-lg focus:ring-2 focus:ring-violet-500 outline-none transition" placeholder="yourname@upi" required>
+                </div>
+                <div class="flex gap-4 mt-6">
+                    <button type="button" class="close-modal-btn w-full bg-gray-600/50 hover:bg-gray-600/80 text-white font-bold py-3 rounded-lg transition">Cancel</button>
+                    <button type="submit" class="w-full bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-3 rounded-lg transition">Submit Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
     <script src="{{ url_for('static', filename='js/aviator_logic.js') }}"></script>
 </body>
 </html>

@@ -1,14 +1,48 @@
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-    <div class="bg-gray-800 p-6 rounded-xl">
-        <h3 class="text-gray-400 text-sm font-medium">Total Users</h3>
-        <p class="text-3xl font-bold text-white mt-2">{{ data.total_users }}</p>
+<!-- templates/admin_partials/dashboard.html -->
+<div class="space-y-8">
+    <!-- Financial Overview -->
+    <div>
+        <h3 class="text-xl font-semibold text-white mb-4">Financial Overview</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- Net Profit -->
+            <div class="bg-green-800/20 border border-green-600/30 p-6 rounded-xl">
+                <h4 class="text-gray-400 text-sm font-medium">Net Profit</h4>
+                <p class="text-3xl font-bold text-green-300 mt-2">₹{{ "%.2f"|format(data.net_profit) }}</p>
+            </div>
+            <!-- Total Deposits -->
+            <div class="bg-blue-800/20 border border-blue-600/30 p-6 rounded-xl">
+                <h4 class="text-gray-400 text-sm font-medium">Total Deposits</h4>
+                <p class="text-3xl font-bold text-blue-300 mt-2">₹{{ "%.2f"|format(data.total_deposits) }}</p>
+            </div>
+            <!-- Total Withdrawals -->
+            <div class="bg-purple-800/20 border border-purple-600/30 p-6 rounded-xl">
+                <h4 class="text-gray-400 text-sm font-medium">Approved Withdrawals</h4>
+                <p class="text-3xl font-bold text-purple-300 mt-2">₹{{ "%.2f"|format(data.total_withdrawals) }}</p>
+            </div>
+            <!-- Pending Withdrawals -->
+            <div class="bg-yellow-800/20 border border-yellow-600/30 p-6 rounded-xl">
+                <h4 class="text-gray-400 text-sm font-medium">Pending Withdrawals</h4>
+                <p class="text-3xl font-bold text-yellow-400 mt-2">{{ data.pending_withdrawals }}</p>
+            </div>
+        </div>
     </div>
-    <div class="bg-gray-800 p-6 rounded-xl">
-        <h3 class="text-gray-400 text-sm font-medium">Total Games Played</h3>
-        <p class="text-3xl font-bold text-white mt-2">{{ data.total_games }}</p>
-    </div>
-    <div class="bg-gray-800 p-6 rounded-xl">
-        <h3 class="text-gray-400 text-sm font-medium">Pending Withdrawals</h3>
-        <p class="text-3xl font-bold text-yellow-400 mt-2">{{ data.pending_withdrawals }}</p>
+
+    <!-- Platform Statistics -->
+    <div>
+        <h3 class="text-xl font-semibold text-white mb-4">Platform Statistics</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-gray-800 p-6 rounded-xl">
+                <h4 class="text-gray-400 text-sm font-medium">Total Users</h4>
+                <p class="text-3xl font-bold text-white mt-2">{{ data.total_users }}</p>
+            </div>
+            <div class="bg-gray-800 p-6 rounded-xl">
+                <h4 class="text-gray-400 text-sm font-medium">Color Games Played</h4>
+                <p class="text-3xl font-bold text-white mt-2">{{ data.total_games }}</p>
+            </div>
+            <div class="bg-gray-800 p-6 rounded-xl">
+                <h4 class="text-gray-400 text-sm font-medium">Aviator Games Played</h4>
+                <p class="text-3xl font-bold text-white mt-2">{{ data.total_aviator_games }}</p>
+            </div>
+        </div>
     </div>
 </div>

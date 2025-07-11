@@ -1,0 +1,58 @@
+<div class="grid md:grid-cols-2 gap-8">
+    <div class="bg-gray-800 rounded-xl p-6">
+        <h3 class="text-xl font-bold text-white mb-4">Set Next Color Game Results</h3>
+        <form action="{{ url_for('admin_set_presets') }}" method="POST">
+            <input type="hidden" name="game_type" value="color">
+            <div class="space-y-3 mb-4">
+                <p class="text-sm text-gray-400">Set up to 5 future outcomes. The game will use these in order. Existing presets will be replaced.</p>
+                <select name="color_outcome" class="w-full p-2 bg-gray-700 border border-gray-600 rounded-lg outline-none">
+                    <option value="">1st Outcome (Optional)</option>
+                    <option value="red">Red</option>
+                    <option value="green">Green</option>
+                    <option value="violet">Violet</option>
+                </select>
+                <select name="color_outcome" class="w-full p-2 bg-gray-700 border border-gray-600 rounded-lg outline-none">
+                    <option value="">2nd Outcome (Optional)</option>
+                    <option value="red">Red</option>
+                    <option value="green">Green</option>
+                    <option value="violet">Violet</option>
+                </select>
+                <select name="color_outcome" class="w-full p-2 bg-gray-700 border border-gray-600 rounded-lg outline-none">
+                    <option value="">3rd Outcome (Optional)</option>
+                    <option value="red">Red</option>
+                    <option value="green">Green</option>
+                    <option value="violet">Violet</option>
+                </select>
+                <select name="color_outcome" class="w-full p-2 bg-gray-700 border border-gray-600 rounded-lg outline-none">
+                    <option value="">4th Outcome (Optional)</option>
+                    <option value="red">Red</option>
+                    <option value="green">Green</option>
+                    <option value="violet">Violet</option>
+                </select>
+                <select name="color_outcome" class="w-full p-2 bg-gray-700 border border-gray-600 rounded-lg outline-none">
+                    <option value="">5th Outcome (Optional)</option>
+                    <option value="red">Red</option>
+                    <option value="green">Green</option>
+                    <option value="violet">Violet</option>
+                </select>
+            </div>
+            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg transition">Save Color Presets</button>
+        </form>
+    </div>
+
+    <div class="bg-gray-800 rounded-xl p-6">
+        <h3 class="text-xl font-bold text-white mb-4">Set Next Aviator Crash Points</h3>
+        <form action="{{ url_for('admin_set_presets') }}" method="POST">
+            <input type="hidden" name="game_type" value="aviator">
+            <div class="space-y-3 mb-4">
+                 <p class="text-sm text-gray-400">Set crash multipliers (e.g., 1.50, 2.00, 10.25). Existing presets will be replaced.</p>
+                <input type="number" step="0.01" min="1.00" name="aviator_outcome" class="w-full p-2 bg-gray-700 border border-gray-600 rounded-lg outline-none" placeholder="1st Crash Point (e.g. 2.54)">
+                <input type="number" step="0.01" min="1.00" name="aviator_outcome" class="w-full p-2 bg-gray-700 border border-gray-600 rounded-lg outline-none" placeholder="2nd Crash Point">
+                <input type="number" step="0.01" min="1.00" name="aviator_outcome" class="w-full p-2 bg-gray-700 border border-gray-600 rounded-lg outline-none" placeholder="3rd Crash Point">
+                <input type="number" step="0.01" min="1.00" name="aviator_outcome" class="w-full p-2 bg-gray-700 border border-gray-600 rounded-lg outline-none" placeholder="4th Crash Point">
+                <input type="number" step="0.01" min="1.00" name="aviator_outcome" class="w-full p-2 bg-gray-700 border border-gray-600 rounded-lg outline-none" placeholder="5th Crash Point">
+            </div>
+            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg transition">Save Aviator Presets</button>
+        </form>
+    </div>
+</div>

@@ -5,4 +5,5 @@ pymongo
 Werkzeug
 gunicorn
 eventlet
+requests
 dnspython
