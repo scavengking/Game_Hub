@@ -280,4 +280,40 @@ document.addEventListener('DOMContentLoaded', () => {
              updateBetButton('disabled', 'Cashed Out');
         }
     }
+
+    // --- Shared Modal & Payment Logic ---
+    const cashfree = new Cashfree();
+    const paymentBtn = document.getElementById('proceed-to-payment-btn');
+
+    if (paymentBtn) {
+        paymentBtn.addEventListener('click', () => {
+            const amount = document.getElementById('add-cash-amount').value;
+            if (!amount || amount < 10) {
+                showNotification('Minimum deposit is ₹10.', 'error');
+                return;
+            }
+
+            paymentBtn.disabled = true;
+            paymentBtn.textContent = 'Processing...';
+
+            fetch('/api/payment/create_order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount }),
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success' && data.payment_session_id) {
+                    cashfree.checkout({ paymentSessionId: data.payment_session_id });
+                } else {
+                    // Use the existing showNotification function in aviator_logic.js
+                    showNotification(data.message || 'Could not create payment order.', 'error');
+                }
+            })
+            .finally(() => {
+                paymentBtn.disabled = false;
+                paymentBtn.textContent = 'Proceed to Pay';
+            });
+        });
+    }
 });

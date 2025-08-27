@@ -3,6 +3,7 @@
         <thead class="bg-gray-700/50">
             <tr>
                 <th class="p-4 font-medium">Mobile Number</th>
+                <th class="p-4 font-medium">Email</th>
                 <th class="p-4 font-medium">Balance</th>
                 <th class="p-4 font-medium">Status</th>
                 <th class="p-4 font-medium">Actions</th>
@@ -12,6 +13,7 @@
             {% for user in data.all_users %}
             <tr class="hover:bg-gray-700/30">
                 <td class="p-4">{{ user.mobile }}</td>
+                <td class="p-4 text-gray-400">{{ user.get('email', 'N/A') }}</td>
                 <td class="p-4">₹{{ "%.2f"|format(user.wallet.balance) }}</td>
                 <td class="p-4">
                     <span class="px-2 py-1 text-xs font-semibold rounded-full {{ 'bg-green-500/20 text-green-300' if user.get('status', 'active') == 'active' else 'bg-red-500/20 text-red-300' }}">

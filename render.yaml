@@ -1,14 +1,10 @@
 services:
   - type: web
-    name: xdhamaka-app
+    name: 9xdhamaka-app
     env: python
-    plan: free # Or your preferred plan type
+    pythonVersion: "3.10.6"
+    plan: starter
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "gunicorn --worker-class eventlet -w 1 --bind 0.0.0.0:$PORT app:app"
-    envVars:
-      - key: MONGO_URI
-        sync: false # Set this in the Render dashboard
-      - key: SECRET_KEY
-        generateValue: true # Or set your own in the dashboard
-      - key: PYTHON_VERSION
-        value: 3.10.6 # Specify a Python version
+    startCommand: "gunicorn --worker-class eventlet --workers 1 --threads 100 --bind 0.0.0.0:$PORT --timeout 120 'app:app'"
+    envVarGroups:
+      - name: 9xdhamaka-secrets
